@@ -1,0 +1,130 @@
+/* ייבוא גופן Quicksand */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600&display=swap');
+
+/* רקע כללי */
+body {
+    font-family: 'Quicksand', sans-serif; /* גופן מיוחד */
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb); /* רקע בהיר ומרגיע */
+    color: #333; /* צבע טקסט כהה לקריאה נוחה */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 400px; /* הרוחב של החלונית */
+    min-height: 300px; /* הגובה של החלונית */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* הצללה */
+    border-radius: 12px;
+    animation: fadeIn 1s ease-in-out;
+    text-align: center; /* טקסט ממורכז */
+}
+
+/* אנימציית כניסה */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* כותרת */
+h1 {
+    color: #283593; /* כחול עמוק */
+    font-size: 30px; /* אותיות גדולות יותר */
+    font-weight: 600; /* עובי טקסט */
+    margin-bottom: 10px;
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: pulse 2s infinite;
+}
+
+/* אנימציית הבהוב עדין */
+@keyframes pulse {
+    0%, 100% {
+        text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        text-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* קלפים */
+.card {
+    width: 100%;
+    height: 100%;
+    max-width: 360px;
+    border: none;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 15px;
+    background: rgba(255, 255, 255, 0.9); /* צבע לבן-שקוף */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* הצללה */
+    backdrop-filter: blur(8px); /* טשטוש עדין */
+    color: #333;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* אפקט ריחוף על הקלפים */
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* טקסט בכרטיסים */
+.card h2 {
+    font-size: 24px; /* אותיות גדולות */
+    margin-bottom: 10px;
+    color: #1a237e; /* כחול כהה */
+    font-weight: 600;
+}
+
+.card p {
+    font-size: 20px; /* אותיות גדולות עוד יותר */
+    line-height: 1.8;
+    color: #555;
+    text-align: center; /* טקסט ממורכז */
+}
+
+/* כפתורים */
+button {
+    background: #64b5f6; /* צבע כפתור בהיר */
+    background: linear-gradient(135deg, #64b5f6, #42a5f5);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    font-size: 18px; /* טקסט גדול בכפתורים */
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #42a5f5, #2196f3);
+}
+
+/* התאמה למובייל */
+@media (max-width: 500px) {
+    body {
+        padding: 10px;
+        min-width: 300px;
+        min-height: 250px;
+    }
+
+    .card {
+        width: 90%;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+}
+
+#event-suggestion{
+    font-size: 20px; 
+
+}
