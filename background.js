@@ -1,48 +1,68 @@
-// Replace the following placeholders with your actual values
-
 const REDIRECT_URI = chrome.identity.getRedirectURL();
 
-
 let tokens = null;
+let CLIENT_ID = null;
+let CLIENT_SECRET = null;
+
+/**
+ * Fetches secrets from the proxy server.
+ */
+async function fetchSecrets() {
+    const response = await fetch("http://dailyassistantai.de.r.appspot.com/getSecrets");
+    if (!response.ok) {
+        console.error("Failed to fetch secrets");
+        return;
+    }
+    const { CLIENT_ID: fetchedClientId, CLIENT_SECRET: fetchedClientSecret } = await response.json();
+    CLIENT_ID = fetchedClientId;
+    CLIENT_SECRET = fetchedClientSecret;
+}
 
 /**
  * Launches the OAuth2 web authorization flow and retrieves access tokens.
  */
-chrome.identity.launchWebAuthFlow(
-    {
-        url: `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.CLIENT_ID}&response_type=code&scope=https://www.googleapis.com/auth/calendar.readonly&redirect_uri=${REDIRECT_URI}`,
-        interactive: true,
-    },
-    async (redirectUrl) => {
-        if (chrome.runtime.lastError) {
-            console.error("OAuth failed:", chrome.runtime.lastError.message);
-            return;
-        }
-
-        const params = new URLSearchParams(new URL(redirectUrl).search);
-        const authCode = params.get("code");
-
-        const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                client_id: CLIENT_ID,
-                client_secret: process.env.CLIENT_SECRET,
-                code: authCode,
-                grant_type: "authorization_code",
-                redirect_uri: REDIRECT_URI,
-            }),
-        });
-
-        tokens = await tokenResponse.json();
-        if (!tokens || !tokens.access_token) {
-            console.error("Failed to retrieve tokens.");
-            return;
-        }
-        fetchAndScheduleEvents();
+async function authenticateUser() {
+    await fetchSecrets(); // Ensure secrets are loaded before starting OAuth flow
+    if (!CLIENT_ID || !CLIENT_SECRET) {
+        console.error("CLIENT_ID or CLIENT_SECRET is not available.");
+        return;
     }
-);
 
+    chrome.identity.launchWebAuthFlow(
+        {
+            url: `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&response_type=code&scope=https://www.googleapis.com/auth/calendar.readonly&redirect_uri=${REDIRECT_URI}`,
+            interactive: true,
+        },
+        async (redirectUrl) => {
+            if (chrome.runtime.lastError) {
+                console.error("OAuth failed:", chrome.runtime.lastError.message);
+                return;
+            }
+
+            const params = new URLSearchParams(new URL(redirectUrl).search);
+            const authCode = params.get("code");
+
+            const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    client_id: CLIENT_ID,
+                    client_secret: CLIENT_SECRET,
+                    code: authCode,
+                    grant_type: "authorization_code",
+                    redirect_uri: REDIRECT_URI,
+                }),
+            });
+
+            tokens = await tokenResponse.json();
+            if (!tokens || !tokens.access_token) {
+                console.error("Failed to retrieve tokens.");
+                return;
+            }
+            fetchAndScheduleEvents();
+        }
+    );
+}
 
 /**
  * Fetches events from the user's Google Calendar and schedules alarms.
@@ -58,7 +78,6 @@ async function fetchAndScheduleEvents() {
     const data = await calendarResponse.json();
     const events = data.items || [];
     console.log(events);
-
 
     events.forEach((event) => {
         let reminderTime = 30;
@@ -85,45 +104,60 @@ setInterval(() => {
     }
 }, 1 * 60 * 1000);
 
-
 /**
  * Alarm listener for triggering event reminders.
  */
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     const eventData = await chrome.storage.local.get(alarm.name);
     const event = eventData[alarm.name];
-    console.log("alarm");
 
     if (!event) {
         console.error(`No event data found for alarm: ${alarm.name}`);
         return;
     }
 
-    const prompt = `Based on the provided event, suggest a practical idea or tips to help efficiently plan or execute it. 
-    If the event requires a location or purchase, recommend one clear and relevant option. For example:
-    - For a meeting, suggest a suitable venue.
-    - For purchasing an item, recommend a store or platform.
+    const prompt = `
+    Your task is to provide personalized and highly practical suggestions tailored to the given event details. Focus on delivering ideas, tips, or recommendations that enhance planning, execution, or enjoyment of the event. The suggestions should be relevant to the event type and context, either offering technical, logistical, or creative insights.
 
-    Alternatively, if practical tips are more appropriate, provide concise and actionable advice. For example:
-    - For a meeting, give three tips for effective participation.
-    - For a long event, suggest preparation ideas like eating or staying hydrated.
+    ### Guidelines for Responses:
+    1. **Precision and Relevance**:
+        - Focus on the specific nature of the event to ensure your suggestions are useful and practical.
+        - Avoid generic advice—tailor each response to the context provided.
 
-    Guidelines for responses:
-    1. Provide either **one practical idea** or **up to three concise tips**—not both.
-    2. Use clear and readable formatting, ensuring a line break (\\n) after each tip.
-    3. Do not include the event title or start time in the response.
-    4. Avoid using characters like "*" or referring to yourself as an AI agent.
-    5. If suggesting a link, write it in plain text (e.g., "example.com").
+    2. **Formatting**:
+        - Offer **one clear recommendation** or **up to three concise tips**—not both.
+        - Ensure each tip is written as a clear and independent statement, with a line break (\\n) after each.
 
-    Here is the event:
+    3. **Style and Tone**:
+        - Use a friendly and informative tone.
+        - Avoid complex language; keep responses clear and actionable.
+        - Refrain from including phrases like "as an AI" or unnecessary self-references.
+
+    4. **Content**:
+        - When a location, activity, or purchase is relevant, suggest one suitable and accessible option.
+        - If technical or professional events are involved, prioritize actionable advice, resources, or tools for improvement.
+        - Inject creativity and thoughtfulness when appropriate, such as suggesting games for social gatherings or motivational tips for challenging events.
+
+    5. **Exclusions**:
+        - Do not include the event's title or time in your response.
+        - Avoid formatting with symbols (e.g., "*") and include links as plain text (e.g., "example.com").
+
+    ### Examples of Suggestions:
+    - **For a dinner with friends**: Recommend a cozy restaurant, suggest a fun group activity (e.g., trivia night), or provide a playful invitation idea to share with the group.
+    - **For studying algorithms**: Recommend practice platforms (e.g., leetcode.com), list must-know topics, or offer study tips like breaking problems into smaller parts.
+    - **For a long meeting**: Suggest preparation tips like bringing snacks or staying hydrated, or recommend productivity tools like notetaking apps.
+
+    Now, based on this event, provide your response:
+    
     Title: ${event.summary}
     Start: ${event.start.dateTime || event.start.date}`;
 
-    const aiResponse = await fetch("http://localhost:3000/generateText", {
+    const aiResponse = await fetch("http://dailyassistantai.de.r.appspot.com/generateText", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
     });
+
     const isoDate = event.start.dateTime || event.start.date;
     const [datePart, timePart] = isoDate.split("T");
     const [year, month, day] = datePart.split("-");
@@ -136,10 +170,9 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             summary: event.summary,
             start: formattedDateTime,
         },
-        suggestion: responseData || "No suggestions available.",
+        suggestion: responseData.response || "No suggestions available.",
     };
     saveSuggestion(newSuggestion);
-
 
     chrome.windows.create({
         url: "popup/popup.html",
@@ -159,5 +192,5 @@ function saveSuggestion(suggestion) {
     });
 }
 
-
-
+// Initialize the authentication process
+authenticateUser();

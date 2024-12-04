@@ -17,7 +17,7 @@ body {
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* הצללה */
     border-radius: 12px;
     animation: fadeIn 1s ease-in-out;
-    text-align: center; /* טקסט ממורכז */
+    text-align: left; /* טקסט ממורכז */
 }
 
 /* אנימציית כניסה */

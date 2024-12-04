@@ -4,12 +4,14 @@
   "description": "",
   "main": "background.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node proxy.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/secret-manager": "^5.6.0",
     "@google/generative-ai": "^0.21.0",
     "cors": "^2.8.5",
     "express": "^4.21.1",

@@ -7,6 +7,7 @@
         "identity",
         "alarms",
         "notifications",
+        "activeTab",
         "storage"
     ],
     "background": {
@@ -27,10 +28,9 @@
         "48": "icon.png",
         "128": "icon.png"
     },
-     "action": {
+    "action": {
         "default_icon": "icon.png",
         "default_title": "Daily Assistant",
         "default_popup": "popup/popup.html"
     }
-   
 }
