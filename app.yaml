@@ -5,8 +5,5 @@ handlers:
     script: auto
   - url: /getSecrets
     script: auto
-env_variables:
-  GEMINI_API_KEY: "AIzaSyDDh93_yP_sEktGK8prfspiVdok8b3KQEU"
-  CLIENT_ID: "639947410769-ha93v8a4b632tufpk9epdt9vs40kffme.apps.googleusercontent.com"
-  CLIENT_SECRET: "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"
+
 
