@@ -5,8 +5,11 @@ This project is a Google Calendar extension powered by AI. It helps users better
 
 ## **Key Features**
 📅 **Smart Alerts:** Automatically generates intelligent notifications for Google Calendar events.
+
 ⏰ **Customizable Timing:** Users can set the alert time directly through the Google Calendar interface.
+
 🤖 **AI-Powered Suggestions:** Provides useful tips and details related to the event to help users prepare more effectively.
+
 🔔 **Ease of Use:** Seamlessly integrates with Google Calendar.
 
 ## **How It Works**
